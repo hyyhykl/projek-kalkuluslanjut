@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Space Shooter</title>
+    <style>
+        body {
+            margin: 0;
+            background: black;
+            color: white;
+            font-family: Arial, sans-serif;
+        }
+
+        /* CENTER SEMUA */
+        #gameContainer {
+            position: relative;
+            width: 400px;
+            margin: 40px auto;
+        }
+
+        /* CANVAS */
+        canvas {
+            display: block;
+            background: #0a0a1a;
+            border: 2px solid cyan;
+            border-radius: 10px;
+        }
+
+        /* UI DI ATAS CANVAS */
+        #ui {
+            position: absolute;
+            top: 10px;
+            left: 0;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 15px;
+            box-sizing: border-box;
+        }
+
+        /* KIRI */
+        #leftUI {
+            text-align: left;
+        }
+
+        /* KANAN */
+        #rightUI {
+            text-align: right;
+        }
+
+        /* TEXT */
+        #ui h2 {
+            margin: 0;
+            font-size: 18px;
+        }
+
+        #ui p {
+            margin: 3px 0;
+            font-size: 14px;
+        }
+
+        /* RESTART BUTTON */
+        #restartBtn {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 12px 25px;
+            font-size: 16px;
+            background: cyan;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            display: none;
+        }
+        canvas {
+            box-shadow: 0 0 20px cyan;
+        }
+    </style>
+</head>
+<body>
+
+<div id="gameContainer">
+
+    <div id="ui">
+        <div id="leftUI">
+            <h2>🚀 Space Shooter</h2>
+            <p id="lives">Lives: 3</p>
+        </div>
+
+        <div id="rightUI">
+            <p id="score">Score: 0</p>
+            <p id="highScore">High Score: 0</p>
+        </div>
+    </div>
+
+    <canvas id="gameCanvas" width="400" height="600"></canvas>
+
+</div>
+<button id="restartBtn" style="
+    display:none;
+    position:absolute;
+    top:50%;
+    left:50%;
+    transform:translate(-50%, -50%);
+    padding:12px 25px;
+    font-size:18px;
+    background:cyan;
+    border:none;
+    cursor:pointer;
+    z-index:10;
+">
+Restart
+</button>
+
+<script>
+let canvas = document.getElementById("gameCanvas");
+let restartBtn = document.getElementById("restartBtn");
+let isDragging = false;
+let ctx = canvas.getContext("2d");
+
+// =====================
+// CONTROL MOUSE
+// =====================
+canvas.addEventListener("mousemove", (e) => {
+    let rect = canvas.getBoundingClientRect();
+    let mouseX = e.clientX - rect.left;
+
+    player.x = mouseX - player.width / 2;
+});
+// klik mouse ditekan
+canvas.addEventListener("mousedown", () => {
+    isDragging = true;
+});
+
+// klik mouse dilepas
+canvas.addEventListener("mouseup", () => {
+    isDragging = false;
+});
+
+// kalau keluar canvas juga berhenti
+canvas.addEventListener("mouseleave", () => {
+    isDragging = false;
+}); 
+
+// =====================
+// CONTROL TOUCH (HP)
+// =====================
+canvas.addEventListener("touchmove", (e) => {
+    let rect = canvas.getBoundingClientRect();
+    let touchX = e.touches[0].clientX - rect.left;
+
+    player.x = touchX - player.width / 2;
+
+    e.preventDefault();
+});
+
+// =====================
+// GAMBAR
+// =====================
+let bulletImg = new Image();
+bulletImg.src = "images/bullet.png";
+
+// =====================
+// PLAYER
+// =====================
+let player = {
+    x: 180,
+    y: 550,
+    width: 40,
+    height: 20,
+    speed: 5
+};
+
+// =====================
+// PELURU
+// =====================
+let bullets = [];
+let shootDelay = 300;
+let lastShoot = 0;
+
+// =====================
+// MUSUH
+// =====================
+let enemies = [];
+let spawnDelay = 1000;
+let lastSpawn = 0;
+
+// =====================
+let score = 0;
+let highScore = localStorage.getItem("highScore") || 0;
+let lives = 3;
+let gameOver = false;
+
+// =====================
+// INPUT
+// =====================
+let keys = {};
+
+
+
+// =====================
+// UPDATE
+// =====================
+function update() {
+    if(lives <= 0) {
+        gameOver = true;
+    }
+
+     if(gameOver) {
+        restartBtn.style.display = "block";
+        return;
+    } else {
+        restartBtn.style.display = "none";
+    }
+
+
+
+    // batas layar
+    if(player.x < 0) player.x = 0;
+    if(player.x + player.width > canvas.width)
+        player.x = canvas.width - player.width;
+
+    let now = Date.now();
+
+    // auto shoot
+    if(now - lastShoot > shootDelay) {
+        bullets.push({
+            x: player.x + player.width/2,
+            y: player.y,
+            speed: 7
+        });
+        lastShoot = now;
+    }
+
+    // spawn musuh
+    if(now - lastSpawn > spawnDelay) {
+        enemies.push({
+            x: Math.random() * (canvas.width - 30),
+            y: 0,
+            size: 30,
+            speed: 2
+        });
+        lastSpawn = now;
+    }
+
+    // update peluru
+    bullets.forEach((b, bi) => {
+        b.y -= b.speed;
+
+        if(b.y < 0) bullets.splice(bi, 1);
+    });
+
+    // update musuh
+    enemies.forEach((e, ei) => {
+        e.y += e.speed;
+
+        if(e.y > canvas.height) {
+            enemies.splice(ei, 1);
+            lives--;
+
+            if(lives <= 0) {
+                gameOver = true;
+            }
+        }
+
+        // cek tabrakan peluru
+        bullets.forEach((b, bi) => {
+            let dx = b.x - e.x;
+            let dy = b.y - e.y;
+            let dist = Math.sqrt(dx*dx + dy*dy);
+
+            if(dist < e.size/2) {
+                enemies.splice(ei, 1);
+                bullets.splice(bi, 1);
+                score++;
+                if(score > highScore) {
+                    highScore = score;
+                    localStorage.setItem("highScore", highScore);
+                }
+            }
+        });
+
+        // cek tabrakan player
+        let dx = player.x + player.width/2 - e.x;
+        let dy = player.y - e.y;
+        let dist = Math.sqrt(dx*dx + dy*dy);
+
+        if(dist < e.size/2) {
+            enemies.splice(ei, 1);
+            lives--;
+
+            if(lives <= 0) {
+                gameOver = true;
+            }
+        }
+    });
+
+    document.getElementById("score").innerText = "Score: " + score;
+    document.getElementById("lives").innerText = "Lives: " + lives;
+    document.getElementById("highScore").innerText = "High Score: " + highScore;
+}
+
+// =====================
+// DRAW
+// =====================
+function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // player
+    ctx.fillStyle = "cyan";
+    ctx.fillRect(player.x, player.y, player.width, player.height);
+
+    // peluru
+    bullets.forEach(b => {
+        ctx.drawImage(bulletImg,
+            b.x - 5,
+            b.y - 10,
+            20,
+            30
+        );
+    });
+
+    // musuh
+    ctx.fillStyle = "red";
+    enemies.forEach(e => {
+        ctx.beginPath();
+        ctx.arc(e.x, e.y, e.size/2, 0, Math.PI*2);
+        ctx.fill();
+    });
+
+    // game over
+    if(gameOver) {
+        ctx.fillStyle = "white";
+        ctx.font = "30px Arial";
+        ctx.fillText("GAME OVER", 120, 300);
+    }
+}
+
+function resetGame() {
+    player.x = 180;
+
+    bullets = [];
+    enemies = [];
+
+    score = 0;
+    lives = 3;
+    gameOver = false;
+
+    restartBtn.style.display = "none";
+}
+restartBtn.addEventListener("click", resetGame);
+
+// =====================
+// LOOP
+// =====================
+function gameLoop() {
+    update();
+    draw();
+    requestAnimationFrame(gameLoop);
+}
+
+gameLoop();
+</script>
+
+</body>
+</html>
