@@ -2,12 +2,17 @@
 <html>
 <head>
     <title>Space Shooter</title>
+    
+    <!-- Press Start 2P Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    
     <style>
         body {
             margin: 0;
             background: black;
             color: white;
-            font-family: Arial, sans-serif;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 12px;
         }
 
         /* CENTER SEMUA */
@@ -21,8 +26,11 @@
         canvas {
             display: block;
             background: #0a0a1a;
-            border: 2px solid cyan;
+            border: 3px solid #000000;
             border-radius: 10px;
+            /* Prevent blurry images */
+            image-rendering: crisp-edges;
+            image-rendering: pixelated;
         }
 
         /* UI DI ATAS CANVAS */
@@ -35,6 +43,8 @@
             justify-content: space-between;
             padding: 0 15px;
             box-sizing: border-box;
+            pointer-events: none;
+            font-family: 'Press Start 2P', cursive;
         }
 
         /* KIRI */
@@ -50,30 +60,39 @@
         /* TEXT */
         #ui h2 {
             margin: 0;
-            font-size: 18px;
+            font-size: 12px;
+            font-family: 'Press Start 2P', cursive;
         }
 
         #ui p {
-            margin: 3px 0;
-            font-size: 14px;
+            margin: 5px 0;
+            font-size: 10px;
+            font-family: 'Press Start 2P', cursive;
         }
 
-        /* RESTART BUTTON */
-        #restartBtn {
+        canvas {
+            box-shadow: 0 0 20px #0a0a1a;
+        }
+        
+        /* Loading indicator */
+        #loading {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            padding: 12px 25px;
-            font-size: 16px;
-            background: cyan;
-            border: none;
-            cursor: pointer;
+            color: cyan;
+            background: rgba(0,0,0,0.8);
+            padding: 10px;
             border-radius: 5px;
-            display: none;
+            z-index: 20;
+            font-size: 10px;
+            font-family: 'Press Start 2P', cursive;
         }
-        canvas {
-            box-shadow: 0 0 20px cyan;
+        
+        /* Restart Button */
+        #restartBtn {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 12px;
         }
     </style>
 </head>
@@ -83,275 +102,451 @@
 
     <div id="ui">
         <div id="leftUI">
-            <h2>🚀 Space Shooter</h2>
-            <p id="lives">Lives: 3</p>
+            <h2>SPACE SHOOTER</h2>
+            <p id="lives">LIVES: 3</p>
         </div>
 
         <div id="rightUI">
-            <p id="score">Score: 0</p>
-            <p id="highScore">High Score: 0</p>
+            <p id="score">SCORE: 0</p>
+            <p id="highScore">HIGH SCORE: 0</p>
         </div>
     </div>
 
     <canvas id="gameCanvas" width="400" height="600"></canvas>
-
+    
+    <button id="restartBtn" style="
+        display:none;
+        position:absolute;
+        top:50%;
+        left:50%;
+        transform:translate(-50%, -50%);
+        padding:12px 25px;
+        font-size:12px;
+        background:cyan;
+        border:none;
+        cursor:pointer;
+        z-index:10;
+        border-radius:5px;
+        font-weight:bold;
+        font-family:'Press Start 2P', cursive;
+    ">
+    RESTART
+    </button>
 </div>
-<button id="restartBtn" style="
-    display:none;
-    position:absolute;
-    top:50%;
-    left:50%;
-    transform:translate(-50%, -50%);
-    padding:12px 25px;
-    font-size:18px;
-    background:cyan;
-    border:none;
-    cursor:pointer;
-    z-index:10;
-">
-Restart
-</button>
 
 <script>
+// =====================
+// INITIALIZATION
+// =====================
 let canvas = document.getElementById("gameCanvas");
 let restartBtn = document.getElementById("restartBtn");
-let isDragging = false;
 let ctx = canvas.getContext("2d");
 
-// =====================
-// CONTROL MOUSE
-// =====================
-canvas.addEventListener("mousemove", (e) => {
-    let rect = canvas.getBoundingClientRect();
-    let mouseX = e.clientX - rect.left;
-
-    player.x = mouseX - player.width / 2;
-});
-// klik mouse ditekan
-canvas.addEventListener("mousedown", () => {
-    isDragging = true;
-});
-
-// klik mouse dilepas
-canvas.addEventListener("mouseup", () => {
-    isDragging = false;
-});
-
-// kalau keluar canvas juga berhenti
-canvas.addEventListener("mouseleave", () => {
-    isDragging = false;
-}); 
-
-// =====================
-// CONTROL TOUCH (HP)
-// =====================
-canvas.addEventListener("touchmove", (e) => {
-    let rect = canvas.getBoundingClientRect();
-    let touchX = e.touches[0].clientX - rect.left;
-
-    player.x = touchX - player.width / 2;
-
-    e.preventDefault();
-});
-
-// =====================
-// GAMBAR
-// =====================
-let bulletImg = new Image();
-bulletImg.src = "images/bullet.png";
+// IMPORTANT: Disable image smoothing to prevent blurry images
+ctx.imageSmoothingEnabled = false;
 
 // =====================
 // PLAYER
 // =====================
 let player = {
     x: 180,
-    y: 550,
-    width: 40,
-    height: 20,
+    y: 500,
+    width: 70,
+    height: 60,
     speed: 5
 };
 
 // =====================
-// PELURU
+// GAME VARIABLES
 // =====================
 let bullets = [];
-let shootDelay = 300;
-let lastShoot = 0;
-
-// =====================
-// MUSUH
-// =====================
 let enemies = [];
-let spawnDelay = 1000;
-let lastSpawn = 0;
-
-// =====================
 let score = 0;
 let highScore = localStorage.getItem("highScore") || 0;
 let lives = 3;
 let gameOver = false;
+let isDragging = false;
 
 // =====================
-// INPUT
+// TIMING VARIABLES
 // =====================
-let keys = {};
-
-
+let shootDelay = 300;
+let lastShoot = 0;
+let spawnDelay = 1000;
+let lastSpawn = 0;
 
 // =====================
-// UPDATE
+// LOAD PLAYER SHIP ASSET
+// =====================
+let playerImg = new Image();
+let playerImageLoaded = false;
+playerImg.src = "images/enemyship-1.png";
+
+playerImg.onload = function() {
+    playerImageLoaded = true;
+    console.log("✅ Player ship loaded!");
+};
+
+playerImg.onerror = function() {
+    console.error("❌ Player ship not found at: images/player_ship.png");
+    playerImageLoaded = false;
+};
+
+// =====================
+// LOAD BULLET ASSET
+// =====================
+let bulletImg = new Image();
+let bulletImageLoaded = false;
+bulletImg.src = "images/enemy_bullet.png";
+
+bulletImg.onload = function() {
+    bulletImageLoaded = true;
+    console.log("✅ Bullet image loaded!");
+};
+
+bulletImg.onerror = function() {
+    console.error("❌ Bullet image not found at: images/player_bullet.png");
+    bulletImageLoaded = false;
+};
+
+// =====================
+// LOAD GAME OVER ASSET
+// =====================
+let gameOverImg = new Image();
+let gameOverImageLoaded = false;
+gameOverImg.src = "images/game_over.png";
+
+gameOverImg.onload = function() {
+    gameOverImageLoaded = true;
+    console.log("✅ Game Over image loaded!");
+};
+
+gameOverImg.onerror = function() {
+    console.error("❌ Game Over image not found at: images/game_over.png");
+    gameOverImageLoaded = false;
+};
+
+// =====================
+// CONTROL MOUSE
+// =====================
+canvas.addEventListener("mousemove", (e) => {
+    if (gameOver) return;
+    
+    let rect = canvas.getBoundingClientRect();
+    let mouseX = e.clientX - rect.left;
+    
+    let newX = mouseX - player.width / 2;
+    newX = Math.max(0, Math.min(newX, canvas.width - player.width));
+    player.x = newX;
+});
+
+canvas.addEventListener("mousedown", () => {
+    if (!gameOver) isDragging = true;
+});
+
+canvas.addEventListener("mouseup", () => {
+    isDragging = false;
+});
+
+canvas.addEventListener("mouseleave", () => {
+    isDragging = false;
+}); 
+
+// =====================
+// CONTROL TOUCH (Mobile)
+// =====================
+canvas.addEventListener("touchmove", (e) => {
+    if (gameOver) return;
+    e.preventDefault();
+    
+    let rect = canvas.getBoundingClientRect();
+    let touchX = e.touches[0].clientX - rect.left;
+    
+    let newX = touchX - player.width / 2;
+    newX = Math.max(0, Math.min(newX, canvas.width - player.width));
+    player.x = newX;
+});
+
+canvas.addEventListener("touchstart", (e) => {
+    e.preventDefault();
+});
+
+// =====================
+// UPDATE FUNCTION
 // =====================
 function update() {
     if(lives <= 0) {
         gameOver = true;
     }
 
-     if(gameOver) {
+    if(gameOver) {
         restartBtn.style.display = "block";
         return;
     } else {
         restartBtn.style.display = "none";
     }
 
-
-
-    // batas layar
+    // Boundary check
     if(player.x < 0) player.x = 0;
     if(player.x + player.width > canvas.width)
         player.x = canvas.width - player.width;
 
     let now = Date.now();
 
-    // auto shoot
+    // Auto shoot
     if(now - lastShoot > shootDelay) {
         bullets.push({
             x: player.x + player.width/2,
             y: player.y,
-            speed: 7
+            width: 15,
+            height: 25,
+            speed: 8
         });
         lastShoot = now;
     }
 
-    // spawn musuh
+    // Spawn enemies
     if(now - lastSpawn > spawnDelay) {
+        let enemySize = 30;
         enemies.push({
-            x: Math.random() * (canvas.width - 30),
+            x: Math.random() * (canvas.width - enemySize) + enemySize/2,
             y: 0,
-            size: 30,
-            speed: 2
+            size: enemySize,
+            speed: 2 + Math.random() * 2
         });
         lastSpawn = now;
     }
 
-    // update peluru
-    bullets.forEach((b, bi) => {
-        b.y -= b.speed;
+    // Update bullets
+    for(let i = 0; i < bullets.length; i++) {
+        bullets[i].y -= bullets[i].speed;
+        
+        if(bullets[i].y + bullets[i].height < 0) {
+            bullets.splice(i, 1);
+            i--;
+        }
+    }
 
-        if(b.y < 0) bullets.splice(bi, 1);
-    });
-
-    // update musuh
-    enemies.forEach((e, ei) => {
+    // Update enemies & collision detection
+    for(let ei = 0; ei < enemies.length; ei++) {
+        let e = enemies[ei];
         e.y += e.speed;
 
-        if(e.y > canvas.height) {
+        // Check if enemy passed bottom
+        if(e.y + e.size/2 > canvas.height) {
             enemies.splice(ei, 1);
             lives--;
-
-            if(lives <= 0) {
-                gameOver = true;
-            }
+            ei--;
+            continue;
         }
 
-        // cek tabrakan peluru
-        bullets.forEach((b, bi) => {
-            let dx = b.x - e.x;
-            let dy = b.y - e.y;
+        // Check bullet-enemy collision
+        let hit = false;
+        for(let bi = 0; bi < bullets.length; bi++) {
+            let b = bullets[bi];
+            
+            let circleX = e.x;
+            let circleY = e.y;
+            let radius = e.size/2;
+            let rectX = b.x - b.width/2;
+            let rectY = b.y;
+            
+            let closestX = Math.max(rectX, Math.min(circleX, rectX + b.width));
+            let closestY = Math.max(rectY, Math.min(circleY, rectY + b.height));
+            
+            let dx = circleX - closestX;
+            let dy = circleY - closestY;
             let dist = Math.sqrt(dx*dx + dy*dy);
-
-            if(dist < e.size/2) {
-                enemies.splice(ei, 1);
+            
+            if(dist < radius) {
                 bullets.splice(bi, 1);
+                hit = true;
                 score++;
                 if(score > highScore) {
                     highScore = score;
                     localStorage.setItem("highScore", highScore);
                 }
-            }
-        });
-
-        // cek tabrakan player
-        let dx = player.x + player.width/2 - e.x;
-        let dy = player.y - e.y;
-        let dist = Math.sqrt(dx*dx + dy*dy);
-
-        if(dist < e.size/2) {
-            enemies.splice(ei, 1);
-            lives--;
-
-            if(lives <= 0) {
-                gameOver = true;
+                break;
             }
         }
-    });
+        
+        if(hit) {
+            enemies.splice(ei, 1);
+            ei--;
+            continue;
+        }
+        
+        // Check player-enemy collision
+        let playerLeft = player.x;
+        let playerRight = player.x + player.width;
+        let playerTop = player.y;
+        let playerBottom = player.y + player.height;
+        
+        let enemyLeft = e.x - e.size/2;
+        let enemyRight = e.x + e.size/2;
+        let enemyTop = e.y - e.size/2;
+        let enemyBottom = e.y + e.size/2;
+        
+        if(playerRight > enemyLeft && 
+           playerLeft < enemyRight && 
+           playerBottom > enemyTop && 
+           playerTop < enemyBottom) {
+            enemies.splice(ei, 1);
+            lives--;
+            ei--;
+        }
+    }
 
-    document.getElementById("score").innerText = "Score: " + score;
-    document.getElementById("lives").innerText = "Lives: " + lives;
-    document.getElementById("highScore").innerText = "High Score: " + highScore;
+    // Update UI
+    document.getElementById("score").innerText = "SCORE: " + score;
+    document.getElementById("lives").innerText = "LIVES: " + lives;
+    document.getElementById("highScore").innerText = "HIGH SCORE: " + highScore;
 }
 
 // =====================
-// DRAW
+// DRAW FUNCTION
 // =====================
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    // Draw stars background
+    ctx.fillStyle = "#0a0a1a";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    // Draw twinkling stars
+    for(let i = 0; i < 100; i++) {
+        ctx.fillStyle = `rgba(255, 255, 255, ${Math.random() * 0.5 + 0.2})`;
+        ctx.fillRect((i * 131) % canvas.width, (i * 253) % canvas.height, 2, 2);
+    }
 
-    // player
-    ctx.fillStyle = "cyan";
-    ctx.fillRect(player.x, player.y, player.width, player.height);
-
-    // peluru
+    // =====================
+    // DRAW PLAYER SPACESHIP
+    // =====================
+    if(playerImageLoaded && playerImg.complete) {
+        ctx.drawImage(playerImg, player.x, player.y, player.width, player.height);
+    } else {
+        // Fallback drawing
+        ctx.fillStyle = "cyan";
+        ctx.fillRect(player.x, player.y, player.width, player.height);
+        ctx.fillStyle = "#00ffff";
+        ctx.fillRect(player.x - 5, player.y + 10, 5, 15);
+        ctx.fillRect(player.x + player.width, player.y + 10, 5, 15);
+        ctx.fillStyle = "white";
+        ctx.fillRect(player.x + player.width/2 - 4, player.y + 8, 8, 8);
+    }
+    
+    // =====================
+    // DRAW BULLETS
+    // =====================
     bullets.forEach(b => {
-        ctx.drawImage(bulletImg,
-            b.x - 5,
-            b.y - 10,
-            20,
-            30
-        );
+        if(bulletImageLoaded && bulletImg.complete) {
+            ctx.drawImage(bulletImg, b.x - b.width/2, b.y, b.width, b.height);
+        } else {
+            ctx.fillStyle = "#ffff00";
+            ctx.fillRect(b.x - b.width/2, b.y, b.width, b.height);
+            ctx.fillStyle = "#ffaa00";
+            ctx.fillRect(b.x - b.width/4, b.y, b.width/2, b.height);
+        }
     });
 
-    // musuh
-    ctx.fillStyle = "red";
+    // =====================
+    // DRAW ENEMIES
+    // =====================
     enemies.forEach(e => {
+        let gradient = ctx.createRadialGradient(e.x, e.y, 0, e.x, e.y, e.size/2);
+        gradient.addColorStop(0, "#ff4444");
+        gradient.addColorStop(1, "#880000");
+        ctx.fillStyle = gradient;
         ctx.beginPath();
         ctx.arc(e.x, e.y, e.size/2, 0, Math.PI*2);
         ctx.fill();
+        
+        ctx.fillStyle = "white";
+        ctx.beginPath();
+        ctx.arc(e.x - e.size/6, e.y - e.size/6, e.size/8, 0, Math.PI*2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(e.x + e.size/6, e.y - e.size/6, e.size/8, 0, Math.PI*2);
+        ctx.fill();
+        
+        ctx.fillStyle = "black";
+        ctx.beginPath();
+        ctx.arc(e.x - e.size/6, e.y - e.size/6, e.size/12, 0, Math.PI*2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(e.x + e.size/6, e.y - e.size/6, e.size/12, 0, Math.PI*2);
+        ctx.fill();
     });
 
-    // game over
+    // =====================
+    // DRAW GAME OVER SCREEN (with Press Start 2P font)
+    // =====================
     if(gameOver) {
+        ctx.fillStyle = "rgba(0,0,0,0.85)";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        if(gameOverImageLoaded && gameOverImg.complete) {
+            let imgWidth = 300;
+            let imgHeight = 150;
+            let imgX = (canvas.width - imgWidth) / 2;
+            let imgY = 150;
+            ctx.drawImage(gameOverImg, imgX, imgY, imgWidth, imgHeight);
+        } else {
+            // Fallback text with Press Start 2P font
+            ctx.fillStyle = "white";
+            ctx.font = "bold 20px 'Press Start 2P', cursive";
+            ctx.fillText("GAME OVER", 95, 250);
+        }
+        
+        // Show scores with Press Start 2P font
+        ctx.font = "12px 'Press Start 2P', cursive";
+        ctx.fillStyle = "cyan";
+        ctx.fillText("SCORE: " + score, canvas.width/2 - 70, 350);
+        
+        ctx.font = "10px 'Press Start 2P', cursive";
+        ctx.fillStyle = "yellow";
+        ctx.fillText("HIGH SCORE: " + highScore, canvas.width/2 - 85, 390);
+        
+        ctx.font = "8px 'Press Start 2P', cursive";
         ctx.fillStyle = "white";
-        ctx.font = "30px Arial";
-        ctx.fillText("GAME OVER", 120, 300);
+        ctx.fillText("CLICK RESTART", canvas.width/2 - 70, 440);
     }
 }
 
+// =====================
+// RESET GAME
+// =====================
 function resetGame() {
     player.x = 180;
-
     bullets = [];
     enemies = [];
-
     score = 0;
     lives = 3;
     gameOver = false;
-
+    lastShoot = Date.now();
+    lastSpawn = Date.now();
     restartBtn.style.display = "none";
 }
+
 restartBtn.addEventListener("click", resetGame);
 
 // =====================
-// LOOP
+// KEYBOARD CONTROLS
+// =====================
+document.addEventListener("keydown", (e) => {
+    if(gameOver) return;
+    
+    if(e.key === 'a' || e.key === 'A' || e.key === 'ArrowLeft') {
+        player.x -= 25;
+        player.x = Math.max(0, player.x);
+    } else if(e.key === 'd' || e.key === 'D' || e.key === 'ArrowRight') {
+        player.x += 25;
+        player.x = Math.min(canvas.width - player.width, player.x);
+    }
+});
+
+// =====================
+// GAME LOOP
 // =====================
 function gameLoop() {
     update();
@@ -359,6 +554,7 @@ function gameLoop() {
     requestAnimationFrame(gameLoop);
 }
 
+// Start the game
 gameLoop();
 </script>
 
