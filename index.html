@@ -3,7 +3,7 @@
 <head>
     <title>Space Shooter</title>
     
-    <!-- Press Start 2P Font -->
+
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
     
     <style>
@@ -15,7 +15,7 @@
             font-size: 12px;
         }
 
-        /* CENTER SEMUA */
+    
         #gameContainer {
             position: relative;
             width: 400px;
@@ -69,6 +69,23 @@
             font-size: 10px;
             font-family: 'Press Start 2P', cursive;
         }
+        
+        /* Lives container - holds heart icons */
+        #livesContainer {
+            margin: 5px 0;
+            display: flex;
+            gap: 5px;
+            align-items: center;
+        }
+        
+        .lifeIcon {
+            width: 20px;
+            height: 20px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            display: inline-block;
+        }
 
         canvas {
             box-shadow: 0 0 20px #0a0a1a;
@@ -94,6 +111,26 @@
             font-family: 'Press Start 2P', cursive;
             font-size: 12px;
         }
+
+        #ui h2, #ui p, #score, #highScore {
+            text-shadow: 
+                -2px -2px 0 #000000,
+                -2px -1px 0 #000000,
+                -2px  0px 0 #000000,
+                -2px  1px 0 #000000,
+                -2px  2px 0 #000000,
+                -1px -2px 0 #000000,
+                -1px  2px 0 #000000,
+                 0px -2px 0 #000000,
+                 0px  2px 0 #000000,
+                 1px -2px 0 #000000,
+                 1px  2px 0 #000000,
+                 2px -2px 0 #000000,
+                 2px -1px 0 #000000,
+                 2px  0px 0 #000000,
+                 2px  1px 0 #000000,
+                 2px  2px 0 #000000;
+        }
     </style>
 </head>
 <body>
@@ -103,7 +140,9 @@
     <div id="ui">
         <div id="leftUI">
             <h2>SPACE SHOOTER</h2>
-            <p id="lives">LIVES: 3</p>
+            <div id="livesContainer">
+                <!-- Lives will be drawn as heart icons here -->
+            </div>
         </div>
 
         <div id="rightUI">
@@ -122,8 +161,8 @@
         transform:translate(-50%, -50%);
         padding:12px 25px;
         font-size:12px;
-        background:cyan;
-        border:none;
+        background: #FFCC00;
+        border:2px solid #000000;
         cursor:pointer;
         z-index:10;
         border-radius:5px;
@@ -176,6 +215,25 @@ let spawnDelay = 1000;
 let lastSpawn = 0;
 
 // =====================
+// STATIC TWINKLING STARS SYSTEM
+// =====================
+let stars = [];
+let starColors = ["#FFFFFF", "#44AAFF", "#FFDD44", "#FF5555", "#33FFCC", "#FF55FF"];
+
+// Generate 120 stars at random positions
+for (let i = 0; i < 120; i++) {
+    stars.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        size: 1 + Math.floor(Math.random() * 3), // 1, 2, or 3 pixels
+        color: starColors[Math.floor(Math.random() * starColors.length)],
+        baseOpacity: 0.3 + Math.random() * 0.5,
+        twinkleSpeed: 0.02 + Math.random() * 0.03,
+        twinklePhase: Math.random() * Math.PI * 2
+    });
+}
+
+// =====================
 // LOAD PLAYER SHIP ASSET
 // =====================
 let playerImg = new Image();
@@ -188,7 +246,7 @@ playerImg.onload = function() {
 };
 
 playerImg.onerror = function() {
-    console.error("❌ Player ship not found at: images/player_ship.png");
+    console.error("❌ Player ship not found at: images/enemyship-1.png");
     playerImageLoaded = false;
 };
 
@@ -205,7 +263,7 @@ bulletImg.onload = function() {
 };
 
 bulletImg.onerror = function() {
-    console.error("❌ Bullet image not found at: images/player_bullet.png");
+    console.error("❌ Bullet image not found at: images/enemy_bullet.png");
     bulletImageLoaded = false;
 };
 
@@ -225,6 +283,181 @@ gameOverImg.onerror = function() {
     console.error("❌ Game Over image not found at: images/game_over.png");
     gameOverImageLoaded = false;
 };
+
+// =====================
+// LOAD HEART ICON ASSET (for lives display)
+// =====================
+let heartIconImg = new Image();
+let heartIconLoaded = false;
+heartIconImg.src = "images/heart.png";
+
+heartIconImg.onload = function() {
+    heartIconLoaded = true;
+    console.log("✅ Heart icon loaded!");
+    updateLivesDisplay();
+};
+
+heartIconImg.onerror = function() {
+    console.error("❌ Heart icon not found at: images/heart.png - using fallback");
+    heartIconLoaded = false;
+    updateLivesDisplay();
+};
+
+// =====================
+// LOAD ENEMY ASSET
+// =====================
+let enemyImg = new Image();
+let enemyImageLoaded = false;
+enemyImg.src = "images/enemy.png";
+
+enemyImg.onload = function() {
+    enemyImageLoaded = true;
+    console.log("✅ Enemy image loaded!");
+};
+
+enemyImg.onerror = function() {
+    console.error("❌ Enemy image not found at: images/enemy.png - using fallback drawing");
+    enemyImageLoaded = false;
+};
+
+// =====================
+// UPDATE LIVES DISPLAY WITH HEART ASSETS
+// =====================
+function updateLivesDisplay() {
+    const livesContainer = document.getElementById("livesContainer");
+    livesContainer.innerHTML = "";
+    
+    for(let i = 0; i < lives; i++) {
+        const heartDiv = document.createElement("div");
+        heartDiv.className = "lifeIcon";
+        
+        if(heartIconLoaded && heartIconImg.complete) {
+            // Use the heart image asset
+            heartDiv.style.backgroundImage = `url('${heartIconImg.src}')`;
+            heartDiv.style.width = "24px";
+            heartDiv.style.height = "24px";
+            heartDiv.style.backgroundSize = "contain";
+            heartDiv.style.backgroundRepeat = "no-repeat";
+            heartDiv.style.backgroundPosition = "center";
+        } else {
+            // Fallback: draw a red heart shape using CSS
+            heartDiv.style.width = "20px";
+            heartDiv.style.height = "20px";
+            heartDiv.style.backgroundColor = "#FF0000";
+            heartDiv.style.border = "2px solid #000000";
+            heartDiv.style.borderRadius = "3px";
+            heartDiv.style.position = "relative";
+        }
+        
+        livesContainer.appendChild(heartDiv);
+    }
+}
+
+// =====================
+// DRAW STATIC TWINKLING STARS
+// =====================
+let twinkleTime = 0;
+
+function drawStars() {
+    twinkleTime += 0.05; // Increment for animation
+    
+    for (let star of stars) {
+        // Calculate twinkling opacity using sine wave
+        let twinkle = Math.sin(twinkleTime * star.twinkleSpeed + star.twinklePhase);
+        let opacity = star.baseOpacity + twinkle * 0.3;
+        opacity = Math.max(0.2, Math.min(1, opacity)); // Clamp between 0.2 and 1
+        
+        ctx.fillStyle = star.color;
+        ctx.globalAlpha = opacity;
+        ctx.fillRect(star.x, star.y, star.size, star.size);
+    }
+    ctx.globalAlpha = 1; // Reset opacity
+}
+
+// =====================
+// DRAW GAME OVER TEXT WITH TWINKLE EFFECT
+// =====================
+let gameOverTwinkle = 0;
+
+function drawGameOverText() {
+    gameOverTwinkle += 0.03;
+    
+    // Calculate twinkling for game over text
+    let twinkle = Math.sin(gameOverTwinkle) * 0.3 + 0.7;
+    let redIntensity = Math.floor(200 + Math.sin(gameOverTwinkle * 2) * 55);
+    
+    // Draw black outline (multiple layers for thickness)
+    ctx.font = "bold 28px 'Press Start 2P', cursive";
+    ctx.textAlign = "center";
+    
+    // Black outline (thick)
+    for(let x = -3; x <= 3; x++) {
+        for(let y = -3; y <= 3; y++) {
+            if(x !== 0 || y !== 0) {
+                ctx.fillStyle = "#000000";
+                ctx.fillText("GAME OVER", canvas.width/2 + x, 250 + y);
+            }
+        }
+    }
+    
+    // Red fill with twinkling
+    ctx.fillStyle = `rgb(255, ${Math.floor(50 * twinkle)}, ${Math.floor(50 * twinkle)})`;
+    ctx.fillText("GAME OVER", canvas.width/2, 250);
+}
+
+// =====================
+// DRAW GRADIENT GOLD TEXT WITH WHITE CENTER
+// =====================
+function drawGradientGoldText(text, x, y, fontSize) {
+    ctx.font = `bold ${fontSize}px 'Press Start 2P', cursive`;
+    ctx.textAlign = "center";
+    
+    // Black outline (thick)
+    for(let ox = -2; ox <= 2; ox++) {
+        for(let oy = -2; oy <= 2; oy++) {
+            if(ox !== 0 || oy !== 0) {
+                ctx.fillStyle = "#000000";
+                ctx.fillText(text, x + ox, y + oy);
+            }
+        }
+    }
+    
+    // Draw gradient gold base
+    let gradient = ctx.createLinearGradient(x - 100, y - 10, x + 100, y + 10);
+    gradient.addColorStop(0, "#FFCC00");
+    gradient.addColorStop(0.5, "#FFAA00");
+    gradient.addColorStop(1, "#FFCC00");
+    ctx.fillStyle = gradient;
+    ctx.fillText(text, x, y);
+    
+    // Draw white center highlight (offset slightly)
+    ctx.fillStyle = "#FFFFFF";
+    ctx.fillText(text, x - 1, y - 1);
+    ctx.fillStyle = gradient;
+    ctx.fillText(text, x, y);
+}
+
+// =====================
+// DRAW SCORE TEXT (same as high score color)
+// =====================
+function drawScoreText(text, x, y, fontSize) {
+    ctx.font = `bold ${fontSize}px 'Press Start 2P', cursive`;
+    ctx.textAlign = "center";
+    
+    // Black outline (thick)
+    for(let ox = -2; ox <= 2; ox++) {
+        for(let oy = -2; oy <= 2; oy++) {
+            if(ox !== 0 || oy !== 0) {
+                ctx.fillStyle = "#000000";
+                ctx.fillText(text, x + ox, y + oy);
+            }
+        }
+    }
+    
+    // Same yellow/gold color as high score
+    ctx.fillStyle = "#FFCC00";
+    ctx.fillText(text, x, y);
+}
 
 // =====================
 // CONTROL MOUSE
@@ -307,7 +540,7 @@ function update() {
 
     // Spawn enemies
     if(now - lastSpawn > spawnDelay) {
-        let enemySize = 30;
+        let enemySize = 80;
         enemies.push({
             x: Math.random() * (canvas.width - enemySize) + enemySize/2,
             y: 0,
@@ -336,6 +569,7 @@ function update() {
         if(e.y + e.size/2 > canvas.height) {
             enemies.splice(ei, 1);
             lives--;
+            updateLivesDisplay();
             ei--;
             continue;
         }
@@ -393,13 +627,13 @@ function update() {
            playerTop < enemyBottom) {
             enemies.splice(ei, 1);
             lives--;
+            updateLivesDisplay();
             ei--;
         }
     }
 
     // Update UI
     document.getElementById("score").innerText = "SCORE: " + score;
-    document.getElementById("lives").innerText = "LIVES: " + lives;
     document.getElementById("highScore").innerText = "HIGH SCORE: " + highScore;
 }
 
@@ -409,15 +643,12 @@ function update() {
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     
-    // Draw stars background
+    // Draw dark space background
     ctx.fillStyle = "#0a0a1a";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     
-    // Draw twinkling stars
-    for(let i = 0; i < 100; i++) {
-        ctx.fillStyle = `rgba(255, 255, 255, ${Math.random() * 0.5 + 0.2})`;
-        ctx.fillRect((i * 131) % canvas.width, (i * 253) % canvas.height, 2, 2);
-    }
+    // Draw twinkling stars (static, no movement)
+    drawStars();
 
     // =====================
     // DRAW PLAYER SPACESHIP
@@ -450,66 +681,60 @@ function draw() {
     });
 
     // =====================
-    // DRAW ENEMIES
+    // DRAW ENEMIES (with asset support)
     // =====================
     enemies.forEach(e => {
-        let gradient = ctx.createRadialGradient(e.x, e.y, 0, e.x, e.y, e.size/2);
-        gradient.addColorStop(0, "#ff4444");
-        gradient.addColorStop(1, "#880000");
-        ctx.fillStyle = gradient;
-        ctx.beginPath();
-        ctx.arc(e.x, e.y, e.size/2, 0, Math.PI*2);
-        ctx.fill();
-        
-        ctx.fillStyle = "white";
-        ctx.beginPath();
-        ctx.arc(e.x - e.size/6, e.y - e.size/6, e.size/8, 0, Math.PI*2);
-        ctx.fill();
-        ctx.beginPath();
-        ctx.arc(e.x + e.size/6, e.y - e.size/6, e.size/8, 0, Math.PI*2);
-        ctx.fill();
-        
-        ctx.fillStyle = "black";
-        ctx.beginPath();
-        ctx.arc(e.x - e.size/6, e.y - e.size/6, e.size/12, 0, Math.PI*2);
-        ctx.fill();
-        ctx.beginPath();
-        ctx.arc(e.x + e.size/6, e.y - e.size/6, e.size/12, 0, Math.PI*2);
-        ctx.fill();
+        if(enemyImageLoaded && enemyImg.complete) {
+            // Draw enemy using image asset
+            ctx.drawImage(enemyImg, e.x - e.size/2, e.y - e.size/2, e.size, e.size);
+        } else {
+            // Fallback drawing (original gradient + eyes)
+            let gradient = ctx.createRadialGradient(e.x, e.y, 0, e.x, e.y, e.size/2);
+            gradient.addColorStop(0, "#ff4444");
+            gradient.addColorStop(1, "#880000");
+            ctx.fillStyle = gradient;
+            ctx.beginPath();
+            ctx.arc(e.x, e.y, e.size/2, 0, Math.PI*2);
+            ctx.fill();
+            
+            ctx.fillStyle = "white";
+            ctx.beginPath();
+            ctx.arc(e.x - e.size/6, e.y - e.size/6, e.size/8, 0, Math.PI*2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(e.x + e.size/6, e.y - e.size/6, e.size/8, 0, Math.PI*2);
+            ctx.fill();
+            
+            ctx.fillStyle = "black";
+            ctx.beginPath();
+            ctx.arc(e.x - e.size/6, e.y - e.size/6, e.size/12, 0, Math.PI*2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(e.x + e.size/6, e.y - e.size/6, e.size/12, 0, Math.PI*2);
+            ctx.fill();
+        }
     });
 
     // =====================
-    // DRAW GAME OVER SCREEN (with Press Start 2P font)
+    // DRAW GAME OVER SCREEN
     // =====================
     if(gameOver) {
         ctx.fillStyle = "rgba(0,0,0,0.85)";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         
-        if(gameOverImageLoaded && gameOverImg.complete) {
-            let imgWidth = 300;
-            let imgHeight = 150;
-            let imgX = (canvas.width - imgWidth) / 2;
-            let imgY = 150;
-            ctx.drawImage(gameOverImg, imgX, imgY, imgWidth, imgHeight);
-        } else {
-            // Fallback text with Press Start 2P font
-            ctx.fillStyle = "white";
-            ctx.font = "bold 20px 'Press Start 2P', cursive";
-            ctx.fillText("GAME OVER", 95, 250);
-        }
+        // Draw twinkling stars on top of dark overlay
+        drawStars();
         
-        // Show scores with Press Start 2P font
-        ctx.font = "12px 'Press Start 2P', cursive";
-        ctx.fillStyle = "cyan";
-        ctx.fillText("SCORE: " + score, canvas.width/2 - 70, 350);
+        // Draw "GAME OVER" text - large, red, black outline, twinkling, centered
+        drawGameOverText();
         
-        ctx.font = "10px 'Press Start 2P', cursive";
-        ctx.fillStyle = "yellow";
-        ctx.fillText("HIGH SCORE: " + highScore, canvas.width/2 - 85, 390);
+        // Draw "SCORE" text - same color as high score (yellow/gold), black outline, centered
+        drawScoreText("SCORE: " + score, canvas.width/2, 350, 14);
         
-        ctx.font = "8px 'Press Start 2P', cursive";
-        ctx.fillStyle = "white";
-        ctx.fillText("CLICK RESTART", canvas.width/2 - 70, 440);
+        // Draw "HIGH SCORE" text - shades of gold with white center, black outline, centered
+        drawGradientGoldText("HIGH SCORE: " + highScore, canvas.width/2, 400, 12);
+        
+        // "CLICK RESTART" text REMOVED as requested
     }
 }
 
@@ -526,6 +751,7 @@ function resetGame() {
     lastShoot = Date.now();
     lastSpawn = Date.now();
     restartBtn.style.display = "none";
+    updateLivesDisplay();
 }
 
 restartBtn.addEventListener("click", resetGame);
