@@ -229,7 +229,8 @@ const powerUpTypes = ['heal', 'rapid', 'triple'];
 let boss = null;
 let bossBullets = [];
 let bossSpawnScore = 50; 
-let isBossWave = false; 
+let isBossWave = false;
+let bossLevel = 1;
 
 // =====================
 // INIT STARS
@@ -290,7 +291,7 @@ resizeCanvas();
 // ASSETS LOADING
 // =====================
 let playerImg = new Image(), playerLoaded = false;
-playerImg.src = "images/enemyship-1.png";
+playerImg.src = "images/ship.png";
 playerImg.onload = () => playerLoaded = true;
 
 let bulletImg = new Image(), bulletLoaded = false;
@@ -302,8 +303,12 @@ enemyImg.src = "images/enemy.png";
 enemyImg.onload = () => enemyLoaded = true;
 
 let bossImg = new Image(), bossLoaded = false;
-bossImg.src = "images/enemy.png"; 
+bossImg.src = "images/enemyship-1.png"; 
 bossImg.onload = () => bossLoaded = true;
+
+let bossBulletImg = new Image(), bossBulletLoaded = false;
+bossBulletImg.src = "images/enemy_bullet.png";
+bossBulletImg.onload = () => bossBulletLoaded = true;
 
 let heartImg = new Image(), heartLoaded = false;
 heartImg.src = "images/heart.png";
@@ -525,7 +530,11 @@ function update() {
                     }
                     boss = null;
                     isBossWave = false;
-                    bossSpawnScore += 50; 
+                    
+                    // 👇 UBAH BARIS INI 👇
+                    bossSpawnScore += 100; // Ubah dari 50 menjadi 100, 150, atau sesukamu!
+                    
+                    bossLevel++; 
                 }
             }
         }
@@ -736,15 +745,23 @@ function draw() {
         ctx.fillStyle = "cyan"; ctx.fillRect(player.x, player.y, player.width, player.height);
     }
     ctx.shadowBlur = 0; 
-    
+
+    // --- GAMBAR PELURU BOSS ---
     bossBullets.forEach(bb => {
-        ctx.fillStyle = "#FF5555";
-        ctx.shadowBlur = 10;
-        ctx.shadowColor = "#FF5555";
-        ctx.beginPath();
-        ctx.arc(bb.x, bb.y, bb.width/2, 0, Math.PI*2);
-        ctx.fill();
-        ctx.shadowBlur = 0;
+        if(bossBulletLoaded) {
+            if(bb.vx !== 0) {
+                ctx.save();
+                ctx.translate(bb.x, bb.y);
+                ctx.rotate(bb.vx > 0 ? 0.2 : -0.2); 
+                ctx.drawImage(bossBulletImg, -bb.width/2, 0, bb.width, bb.height);
+                ctx.restore();
+            } else {
+                ctx.drawImage(bossBulletImg, bb.x - bb.width/2, bb.y, bb.width, bb.height);
+            }
+        } else { 
+            ctx.fillStyle = "#FF0000"; 
+            ctx.fillRect(bb.x - bb.width/2, bb.y, bb.width, bb.height); 
+        }
     });
 
     bullets.forEach(b => {
@@ -805,6 +822,7 @@ function resetGame() {
     player.x = canvas.width / 2 - player.width / 2; 
     bullets = []; enemies = []; powerUps = []; particles = []; 
     boss = null; bossBullets = []; isBossWave = false; bossSpawnScore = 50;
+    bossLevel = 1
     score = 0; displayedScore = -1;
     lives = 3; gameOver = false;
     activePowerUp = null; shootDelay = 300;
