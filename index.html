@@ -35,9 +35,6 @@
             image-rendering: pixelated;
         }
 
-        /* ============================================ */
-        /* RETRO START MENU - COOL & ANIMATED           */
-        /* ============================================ */
         .overlay {
             position: absolute;
             top: 0;
@@ -54,7 +51,6 @@
             overflow: hidden;
         }
         
-        /* Animated scanline effect */
         .overlay::before {
             content: "";
             position: absolute;
@@ -78,10 +74,9 @@
             100% { transform: translateY(100%); }
         }
         
-        /* Glowing title with animation */
         .glowing-title {
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 15px;
             position: relative;
             animation: titleFloat 3s ease-in-out infinite;
         }
@@ -91,41 +86,61 @@
             50% { transform: translateY(-8px); }
         }
         
-        .title-line1, .title-line2 {
-            font-size: 24px;
-            font-weight: bold;
-            letter-spacing: 4px;
-            position: relative;
-            display: inline-block;
-        }
-        
-        .title-line1 {
+        .subtitle-text {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 10px;
             color: #FFD700;
-            text-shadow: 
-                0 0 5px #FFD700,
-                0 0 10px #FF8C00,
-                0 0 20px #FF4500,
-                4px 4px 0 #000000;
-            animation: titleGlow 1.5s ease-in-out infinite alternate;
-        }
-        
-        .title-line2 {
-            color: #00FFFF;
-            text-shadow: 
-                0 0 5px #00FFFF,
-                0 0 10px #0088FF,
-                0 0 20px #0044AA,
-                4px 4px 0 #000000;
-            animation: titleGlow 1.5s ease-in-out infinite alternate 0.5s;
+            text-shadow: 2px 2px 0 #000000;
+            text-align: center;
             margin-top: 5px;
+            margin-bottom: 20px;
+            letter-spacing: 2px;
         }
         
-        @keyframes titleGlow {
-            from { text-shadow: 0 0 5px currentColor, 0 0 10px currentColor, 4px 4px 0 #000; }
-            to { text-shadow: 0 0 15px currentColor, 0 0 30px currentColor, 0 0 45px currentColor, 4px 4px 0 #000; }
+        .flat-start-btn {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 14px;
+            padding: 12px 30px;
+            margin-top: 10px;
+            background: #ffcd00;
+            border: 3px solid #000000;
+            cursor: pointer;
+            border-radius: 0px;
+            color: #000000;
+            font-weight: bold;
+            transition: all 0.1s ease;
+            position: relative;
+            box-shadow: none;
         }
         
-        /* Decorative stars around title */
+        .flat-start-btn:active {
+            transform: translateY(3px);
+        }
+        
+        .menu-stars {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+        
+        .menu-star {
+            position: absolute;
+            background-color: white;
+            border-radius: 50%;
+            opacity: 0;
+            animation: menuStarTwinkle 3s ease-in-out infinite;
+        }
+        
+        @keyframes menuStarTwinkle {
+            0% { opacity: 0; transform: scale(0.5); }
+            50% { opacity: 1; transform: scale(1); }
+            100% { opacity: 0; transform: scale(0.5); }
+        }
+        
         .star-deco {
             position: absolute;
             font-size: 20px;
@@ -138,83 +153,27 @@
             100% { transform: rotate(360deg) scale(1); opacity: 1; }
         }
         
-        /* Instructions panel */
-        .instructions-panel {
-            background: rgba(0, 0, 0, 0.7);
-            border: 2px solid #FFD700;
-            border-radius: 10px;
-            padding: 15px 25px;
-            margin: 20px 0;
-            text-align: center;
-            backdrop-filter: blur(4px);
-            box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
-            animation: panelPulse 2s ease-in-out infinite;
-        }
-        
-        @keyframes panelPulse {
-            0%, 100% { border-color: #FFD700; box-shadow: 0 0 10px rgba(255, 215, 0, 0.3); }
-            50% { border-color: #00FFFF; box-shadow: 0 0 25px rgba(0, 255, 255, 0.5); }
-        }
-        
-        .instructions-panel p {
-            font-size: 9px;
-            color: #FFD700;
-            text-shadow: 1px 1px 0 #000;
-            margin: 8px 0;
-        }
-        
-        .instructions-panel .highlight {
-            color: #00FFFF;
-            font-size: 10px;
-        }
-        
-        /* Cool start button */
-        .cool-start-btn {
-            font-family: 'Press Start 2P', cursive;
-            font-size: 14px;
-            padding: 15px 35px;
-            margin-top: 20px;
-            background: linear-gradient(135deg, #FFD700, #FF8C00);
-            border: none;
-            cursor: pointer;
-            border-radius: 50px;
-            color: #000;
-            font-weight: bold;
-            text-shadow: 1px 1px 0 rgba(255,255,255,0.5);
-            box-shadow: 0 8px 0 #8B4513, 0 5px 20px rgba(255, 215, 0, 0.5);
-            transition: all 0.1s ease;
-            position: relative;
-            animation: btnPulse 1s ease-in-out infinite;
-        }
-        
-        @keyframes btnPulse {
-            0%, 100% { transform: scale(1); box-shadow: 0 8px 0 #8B4513, 0 5px 20px rgba(255, 215, 0, 0.5); }
-            50% { transform: scale(1.02); box-shadow: 0 8px 0 #8B4513, 0 8px 30px rgba(255, 215, 0, 0.8); }
-        }
-        
-        .cool-start-btn:active {
-            transform: translateY(4px);
-            box-shadow: 0 4px 0 #8B4513;
-        }
-        
-        /* Floating particles background */
-        .particle {
+        .music-btn {
             position: absolute;
-            background: radial-gradient(circle, #FFD700, #FF4500);
-            border-radius: 50%;
-            opacity: 0.6;
-            pointer-events: none;
-            animation: floatParticle linear infinite;
+            bottom: 15px;
+            left: 15px;
+            background: rgba(0,0,0,0.6);
+            border: 1px solid #FFD700;
+            border-radius: 20px;
+            padding: 5px 10px;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 8px;
+            color: #FFD700;
+            cursor: pointer;
+            z-index: 25;
+            transition: all 0.2s;
         }
         
-        @keyframes floatParticle {
-            0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
-            10% { opacity: 0.8; }
-            90% { opacity: 0.5; }
-            100% { transform: translateY(-20vh) rotate(360deg); opacity: 0; }
+        .music-btn:hover {
+            background: rgba(255,215,0,0.3);
+            transform: scale(1.05);
         }
         
-        /* Versi text */
         .version {
             position: absolute;
             bottom: 15px;
@@ -288,24 +247,21 @@
 
 <div id="gameContainer">
     <div id="startUI" class="overlay">
-        <!-- Floating particles generated by JS -->
+        <div id="menuStars" class="menu-stars"></div>
+        
+        <div class="star-deco" style="top: 30px; left: 20px;">✦</div>
+        <div class="star-deco" style="bottom: 80px; right: 25px;">✧</div>
+        <div class="star-deco" style="top: 100px; right: 15px;">★</div>
+        
         <div class="glowing-title">
-            <div class="star-deco" style="top: -30px; left: -40px;">✦</div>
-            <div class="star-deco" style="bottom: -20px; right: -50px;">✧</div>
-            <div class="star-deco" style="top: -10px; right: -30px;">★</div>
-            <div class="title-line1">✦ SPACE ✦</div>
-            <div class="title-line2">⟡ SHOOTER ⟡</div>
+            <img id="titleImage" src="images/title.png" alt="SPACE SHOOTER" style="width: 320px; max-width: 90%; image-rendering: pixelated; image-rendering: crisp-edges;">
         </div>
         
-        <div class="instructions-panel">
-            <p class="highlight">⚡ CONTROLS ⚡</p>
-            <p>🖱️ MOUSE / TOUCH → MOVE SHIP</p>
-            <p>🔫 AUTO-FIRE ENABLED</p>
-            <p>💀 SCORE 25 → POWER-UPS APPEAR</p>
-            <p>👾 SCORE 50 → BOSS FIGHT!</p>
-        </div>
+        <div class="subtitle-text">KELOMPOK 2</div>
         
-        <button id="startBtn" class="cool-start-btn">▶ START GAME ◀</button>
+        <button id="startBtn" class="flat-start-btn">▶ START GAME ◀</button>
+        
+        <button id="musicToggleBtn" class="music-btn">🔊 MUSIC ON</button>
         <div class="version">v.1.0 | RETRO ARCADE</div>
     </div>
     
@@ -329,30 +285,119 @@ const restartBtn = document.getElementById("restartBtn");
 const ctx = canvas.getContext("2d");
 
 // =====================
-// CREATE FLOATING PARTICLES FOR MENU
+// MENU STARS
 // =====================
-function createParticles() {
-    const overlay = document.getElementById("startUI");
-    for(let i = 0; i < 40; i++) {
-        const particle = document.createElement("div");
-        particle.className = "particle";
-        const size = Math.random() * 8 + 2;
-        particle.style.width = size + "px";
-        particle.style.height = size + "px";
-        particle.style.left = Math.random() * 100 + "%";
-        particle.style.animationDuration = Math.random() * 8 + 4 + "s";
-        particle.style.animationDelay = Math.random() * 5 + "s";
-        particle.style.background = `radial-gradient(circle, ${Math.random() > 0.5 ? '#FFD700' : '#00FFFF'}, ${Math.random() > 0.5 ? '#FF4500' : '#0088FF'})`;
-        overlay.appendChild(particle);
+function createMenuStars() {
+    const starsContainer = document.getElementById("menuStars");
+    if (!starsContainer) return;
+    
+    starsContainer.innerHTML = "";
+    
+    for (let i = 0; i < 80; i++) {
+        const star = document.createElement("div");
+        star.className = "menu-star";
+        
+        const size = Math.random() * 3 + 1;
+        star.style.width = size + "px";
+        star.style.height = size + "px";
+        
+        star.style.left = Math.random() * 100 + "%";
+        star.style.top = Math.random() * 100 + "%";
+        
+        const colors = ["#FFFFFF", "#FFDD44", "#44AAFF", "#FF5555", "#33FFCC", "#FF55FF"];
+        star.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+        
+        const duration = 2 + Math.random() * 4;
+        const delay = Math.random() * 5;
+        star.style.animationDuration = duration + "s";
+        star.style.animationDelay = delay + "s";
+        
+        starsContainer.appendChild(star);
     }
 }
-createParticles();
+
+createMenuStars();
 
 // =====================
-// SOUND EFFECTS SYSTEM
+// MUSIC SYSTEM
 // =====================
 
-// Create audio elements
+let menuMusic = new Audio();
+let gameMusic = new Audio();
+
+let currentMusicType = "menu";
+let isMusicPlaying = false;
+let musicEnabled = true;
+
+menuMusic.src = "audio/menu_music.wav";
+gameMusic.src = "audio/game_music.mp3";
+
+menuMusic.loop = true;
+gameMusic.loop = true;
+menuMusic.volume = 0.2;
+gameMusic.volume = 0.2;
+
+const musicToggleBtn = document.getElementById("musicToggleBtn");
+
+function stopAllMusic() {
+    menuMusic.pause();
+    gameMusic.pause();
+    menuMusic.currentTime = 0;
+    gameMusic.currentTime = 0;
+    isMusicPlaying = false;
+}
+
+function playMenuMusic() {
+    if (!musicEnabled) return;
+    stopAllMusic();
+    menuMusic.play().then(() => {
+        console.log("✅ Menu music started");
+        isMusicPlaying = true;
+        currentMusicType = "menu";
+    }).catch(e => {
+        console.log("⚠️ Menu music error:", e);
+    });
+}
+
+function playGameMusic() {
+    if (!musicEnabled) return;
+    stopAllMusic();
+    gameMusic.play().then(() => {
+        console.log("✅ Game music started");
+        isMusicPlaying = true;
+        currentMusicType = "game";
+    }).catch(e => {
+        console.log("⚠️ Game music error:", e);
+    });
+}
+
+function toggleMusic() {
+    if (musicEnabled) {
+        stopAllMusic();
+        musicEnabled = false;
+        musicToggleBtn.innerHTML = "🔇 MUSIC OFF";
+        musicToggleBtn.style.color = "#FF5555";
+        musicToggleBtn.style.borderColor = "#FF5555";
+    } else {
+        musicEnabled = true;
+        musicToggleBtn.innerHTML = "🔊 MUSIC ON";
+        musicToggleBtn.style.color = "#FFD700";
+        musicToggleBtn.style.borderColor = "#FFD700";
+        
+        if (!isGameStarted) {
+            playMenuMusic();
+        } else {
+            playGameMusic();
+        }
+    }
+}
+
+musicToggleBtn.addEventListener("click", toggleMusic);
+
+// =====================
+// SOUND EFFECTS
+// =====================
+
 let sounds = {
     shoot: new Audio(),
     hit: new Audio(),
@@ -366,28 +411,24 @@ let sounds = {
     buttonClick: new Audio()
 };
 
-// Sound file paths (adjust to your actual file names)
 const soundPaths = {
     shoot: "audio/shoot.wav",
     hit: "audio/hit.wav",
     explosion: "audio/explosion.wav",
     powerup: "audio/powerup.wav",
     playerHit: "audio/playerHit.wav",
-    bossAppear: "audio/bossAppear.wav",
+    bossAppear: "audio/bossAppear.mp3",
     bossHit: "audio/bossHit.wav",
-    bossDeath: "audio/bossDeath.wav",
+    bossDeath: "audio/bossDeath.mp3",
     gameOver: "audio/gameOver.wav",
     buttonClick: "audio/buttonClick.wav"
 };
 
-// Load all sounds
 for (let [key, path] of Object.entries(soundPaths)) {
     sounds[key].src = path;
     sounds[key].load();
-    console.log(`🔊 Loaded sound: ${key}`);
 }
 
-// Set volume for each sound (0.0 to 1.0)
 sounds.shoot.volume = 0.3;
 sounds.hit.volume = 0.8;
 sounds.explosion.volume = 0.5;
@@ -399,7 +440,6 @@ sounds.bossDeath.volume = 0.6;
 sounds.gameOver.volume = 0.5;
 sounds.buttonClick.volume = 0.3;
 
-// Helper function to play sound safely
 function playSound(soundName) {
     if (sounds[soundName]) {
         sounds[soundName].currentTime = 0;
@@ -407,14 +447,18 @@ function playSound(soundName) {
     }
 }
 
-// --- TAMBAHAN VARIABEL START SCREEN ---
 const startUI = document.getElementById("startUI");
 const startBtn = document.getElementById("startBtn");
 const uiHUD = document.getElementById("ui");
 let isGameStarted = false;
 
 function startGame() {
-    playSound('buttonClick');  // 🔊 Button click sound
+    playSound('buttonClick');
+    
+    if (musicEnabled) {
+        playGameMusic();
+    }
+    
     isGameStarted = true;
     startUI.style.display = "none";
     uiHUD.style.display = "flex";
@@ -424,8 +468,22 @@ function startGame() {
     lastSpawn = now;
     lastPowerUpSpawn = now;
 }
-startBtn.addEventListener("click", startGame);
-// --------------------------------------
+
+startBtn.addEventListener("click", () => {
+    startGame();
+});
+
+musicToggleBtn.addEventListener("click", () => {
+    if (musicEnabled && !isGameStarted && !isMusicPlaying) {
+        playMenuMusic();
+    }
+});
+
+document.body.addEventListener("click", function initMusicOnFirstClick() {
+    if (musicEnabled && !isGameStarted && !isMusicPlaying) {
+        playMenuMusic();
+    }
+}, { once: true });
 
 let player = { 
     x: 0, 
@@ -455,16 +513,12 @@ let lastPowerUpSpawn = 0;
 let powerUpSpawnDelay = 8000; 
 const powerUpTypes = ['heal', 'rapid', 'triple'];
 
-// --- VARIABEL BOSS ---
 let boss = null;
 let bossBullets = [];
 let bossSpawnScore = 50; 
 let isBossWave = false;
 let bossLevel = 1;
 
-// =====================
-// INIT STARS
-// =====================
 const starColors = ["#FFFFFF", "#44AAFF", "#FFDD44", "#FF5555", "#33FFCC", "#FF55FF"];
 function initStars() {
     stars = [];
@@ -497,9 +551,6 @@ function createGameParticles(x, y, color, amount) {
     }
 }
 
-// =====================
-// FULLSCREEN SETUP
-// =====================
 function resizeCanvas() {
     let container = document.getElementById("gameContainer");
     canvas.width = container.clientWidth;
@@ -517,9 +568,6 @@ function resizeCanvas() {
 window.addEventListener('resize', resizeCanvas);
 resizeCanvas(); 
 
-// =====================
-// ASSETS LOADING
-// =====================
 let playerImg = new Image(), playerLoaded = false;
 playerImg.src = "images/ship.png";
 playerImg.onload = () => playerLoaded = true;
@@ -545,9 +593,6 @@ heartImg.src = "images/heart.png";
 heartImg.onload = () => { heartLoaded = true; updateLivesDisplay(); };
 heartImg.onerror = () => updateLivesDisplay();
 
-// =====================
-// UI UPDATE
-// =====================
 function updateLivesDisplay() {
     const livesContainer = document.getElementById("livesContainer");
     livesContainer.innerHTML = "";
@@ -567,9 +612,6 @@ function updateLivesDisplay() {
     }
 }
 
-// =====================
-// INPUT CONTROLS
-// =====================
 canvas.addEventListener("mousedown", () => { if (isGameStarted && !gameOver) isDragging = true; });
 canvas.addEventListener("mouseup", () => isDragging = false);
 canvas.addEventListener("mouseleave", () => isDragging = false);
@@ -599,16 +641,25 @@ document.addEventListener("keyup", (e) => {
     if(e.key === 'd' || e.key === 'D' || e.key === 'ArrowRight') keys.right = false;
 });
 
-// =====================
-// GAME LOGIC
-// =====================
 function update() {
     if (!isGameStarted) return;
 
     if(lives <= 0 && !gameOver) {
-        playSound('gameOver');  // 🔊 Game Over sound
+        playSound('gameOver');
         gameOver = true;
-    }
+        
+        // STOP GAME MUSIC on Game Over
+        if (gameMusic) {
+            gameMusic.pause();
+            gameMusic.currentTime = 0;
+            }
+        if (menuMusic) {
+            menuMusic.pause();
+            menuMusic.currentTime = 0;
+        }
+        isMusicPlaying = false;
+            console.log("🔇 Game music stopped (Game Over)");
+        }
     
     if(gameOver) {
         restartBtn.style.display = "block";
@@ -629,7 +680,7 @@ function update() {
     }
 
     if(now - lastShoot > shootDelay) {
-        playSound('shoot');  // 🔊 Player shoot sound
+        playSound('shoot');
         if (activePowerUp === 'triple') {
             bullets.push({ x: player.x + player.width/2, y: player.y, width: 15, height: 25, speed: 8, vx: 0 });  
             bullets.push({ x: player.x + player.width/2, y: player.y, width: 15, height: 25, speed: 8, vx: -2 }); 
@@ -640,7 +691,7 @@ function update() {
         lastShoot = now;
     }
 
-    if (now - lastPowerUpSpawn > powerUpSpawnDelay && score >= 25) {
+    if (now - lastPowerUpSpawn > powerUpSpawnDelay && score >= 15) {
         let randType = powerUpTypes[Math.floor(Math.random() * powerUpTypes.length)];
         powerUps.push({
             x: Math.random() * (canvas.width - 40) + 20,
@@ -654,7 +705,7 @@ function update() {
     }
 
     if (score >= bossSpawnScore && !isBossWave && !boss) {
-        playSound('bossAppear');  // 🔊 Boss appears sound
+        playSound('bossAppear');
         isBossWave = true;
         boss = {
             x: canvas.width / 2,
@@ -718,7 +769,7 @@ function update() {
         if(player.x + pTol < bb.x + bb.width/2 && player.x + player.width - pTol > bb.x - bb.width/2 && 
            player.y + pTol < bb.y + bb.height && player.y + player.height - pTol > bb.y) {
             
-            playSound('playerHit');  // 🔊 Player hit sound
+            playSound('playerHit');
             createGameParticles(player.x + player.width/2, player.y, '#FF5555', 20);
             lives--;
             updateLivesDisplay();
@@ -750,7 +801,7 @@ function update() {
             if(b.x > boss.x - boss.width/2 + bTol && b.x < boss.x + boss.width/2 - bTol &&
                b.y > boss.y - boss.height/2 + bTol && b.y < boss.y + boss.height/2 - bTol) {
                 
-                playSound('bossHit');  // 🔊 Boss hit sound
+                playSound('bossHit');
                 boss.hp--;
                 createGameParticles(b.x, b.y, '#FFDD44', 5); 
                 bullets.splice(i, 1);
@@ -758,19 +809,29 @@ function update() {
                 hitSomething = true;
 
                 if (boss.hp <= 0) {
-                    playSound('bossDeath');  // 🔊 Boss death sound
-                    createGameParticles(boss.x, boss.y, '#FF5555', 80); 
-                    createGameParticles(boss.x, boss.y, '#FFAA00', 50);
-                    score += 50; 
-                    if(score > highScore) {
-                        highScore = score;
-                        localStorage.setItem("highScore", highScore);
-                    }
-                    boss = null;
-                    isBossWave = false;
-                    bossSpawnScore += 100;
-                    bossLevel++; 
+                playSound('bossDeath');
+                
+                // STOP ONLY BOSS APPEAR SOUND if it's still playing
+                if (sounds.bossAppear) {
+                    sounds.bossAppear.pause();
+                    sounds.bossAppear.currentTime = 0;
+                    console.log("🔇 Boss appear sound stopped");
                 }
+                
+                // DO NOT stop game music - let it continue playing
+                
+                createGameParticles(boss.x, boss.y, '#FF5555', 80); 
+                createGameParticles(boss.x, boss.y, '#FFAA00', 50);
+                score += 50; 
+                if(score > highScore) {
+                    highScore = score;
+                    localStorage.setItem("highScore", highScore);
+                }
+                boss = null;
+                isBossWave = false;
+                bossSpawnScore += 150;
+                bossLevel++; 
+            }
             }
         }
 
@@ -797,7 +858,7 @@ function update() {
            player.y < p.y + p.size/2 && 
            player.y + player.height > p.y - p.size/2) {
             
-            playSound('powerup');  // 🔊 Power-up collected sound
+            playSound('powerup');
             
             if (p.type === 'heal') {
                 if(lives < 5) lives++; 
@@ -839,7 +900,7 @@ function update() {
             let dy = e.y - closestY;
             
             if(Math.sqrt(dx*dx + dy*dy) < (e.size/2) - 8) {
-                playSound('hit');  // 🔊 Enemy hit sound
+                playSound('hit');
                 createGameParticles(e.x, e.y, '#FFAA00', 15); 
                 
                 bullets.splice(bi, 1);
@@ -854,7 +915,7 @@ function update() {
         }
         
         if(hit) {
-            playSound('explosion');  // 🔊 Enemy death sound
+            playSound('explosion');
             enemies.splice(ei, 1);
             ei--;
             continue;
@@ -865,7 +926,7 @@ function update() {
            player.y + player.height - pTol > e.y - e.size/2 + eTol && 
            player.y + pTol < e.y + e.size/2 - eTol) {
             
-            playSound('playerHit');  // 🔊 Player hit sound
+            playSound('playerHit');
             createGameParticles(e.x, e.y, '#FF5555', 20); 
             createGameParticles(player.x + player.width/2, player.y, '#44AAFF', 10);
             
@@ -883,9 +944,6 @@ function update() {
     }
 }
 
-// =====================
-// DRAWING
-// =====================
 let twinkleTime = 0;
 function drawStars() {
     twinkleTime += 0.05;
@@ -1045,20 +1103,17 @@ function draw() {
         
         ctx.fillStyle = "#FFCC00";
         ctx.font = `bold 14px 'Press Start 2P', cursive`;
-        ctx.fillText("SCORE: " + score, canvas.width/2, centerY + 20);
+        ctx.fillText("SCORE: " + score, canvas.width/2, centerY + 50);
         
-        drawText("HIGH SCORE: " + highScore, canvas.width/2, centerY + 70, 12, false);
+        drawText("HIGH SCORE: " + highScore, canvas.width/2, centerY + 80, 12, false);
     }
 }
 
-// =====================
-// GAME LOOP
-// =====================
 function resetGame() {
-    playSound('buttonClick');  // 🔊 Button click sound
+    playSound('buttonClick');
     player.x = canvas.width / 2 - player.width / 2; 
     bullets = []; enemies = []; powerUps = []; particles = []; 
-    boss = null; bossBullets = []; isBossWave = false; bossSpawnScore = 50;
+    boss = null; bossBullets = []; isBossWave = false; bossSpawnScore = 150;
     bossLevel = 1;
     score = 0; displayedScore = -1;
     lives = 3; gameOver = false;
@@ -1066,6 +1121,20 @@ function resetGame() {
     lastShoot = Date.now(); lastSpawn = Date.now(); lastPowerUpSpawn = Date.now();
     restartBtn.style.display = "none";
     updateLivesDisplay();
+    
+    // RESTART GAME MUSIC when resetting
+    if (musicEnabled && isGameStarted) {
+        // Stop any existing game music first
+        if (gameMusic) {
+            gameMusic.pause();
+            gameMusic.currentTime = 0;
+        }
+        // Start fresh game music
+        gameMusic.play().then(() => {
+            console.log("✅ Game music restarted after reset");
+            isMusicPlaying = true;
+        }).catch(e => console.log("⚠️ Game music error:", e));
+    }
 }
 
 restartBtn.addEventListener("click", resetGame);
